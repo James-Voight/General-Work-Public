@@ -1,0 +1,462 @@
+---
+title: "EDA & Visualization Assignment"
+author: "James Voight"
+date: "09-22-2024"
+date-format: long
+format:
+  #pdf
+  #pptx
+  #docx:
+    #reference-doc: knowles-custom-reference-doc.docx # make sure it is in the same folder as the .qmd
+      # Run this in your python terminal to create a basic reference-doc that you can modify:
+      # quarto pandoc -o custom-reference-doc.docx --print-default-data-file reference.docx
+  html: # or docx for Word Document
+    toc: true # includes table of contents
+    code-fold: true # option for collapsing code blocks in html
+execute:
+  echo: true # includes output
+  warning: false # turns off warnings
+  error: false # if set to true, then stops running at error
+  output: true
+python:
+  version: "3.12.4"  # Specify your Python version here
+  
+---
+
+# R Code
+```{r}
+# Install
+# install.packages("readxl")
+# install.packages("dplyr")
+# install.packages("tidyr")
+# install.packages("lubridate")
+# install.packages("mice")
+# install.packages("caret")
+# install.packages("stringr")
+# install.packages("fastDummies")
+# install.packages("parsedate")
+
+library(readxl)
+library(dplyr)
+library(tidyr)
+library(lubridate)
+library(mice)
+library(caret)
+library(stringr)
+library(fastDummies)
+library(parsedate)
+```
+
+# Python Code
+```{python}
+#import statements
+import pandas as pd
+import re
+import datetime as dt
+from sklearn.impute import SimpleImputer
+from sklearn import linear_model
+from sklearn.impute import KNNImputer
+from sklearn.experimental import enable_iterative_imputer
+from sklearn.impute import IterativeImputer
+from sklearn.preprocessing import StandardScaler
+```
+
+## Q1a - Python
+```{python}
+#1
+path = "C:/Users/james/Downloads/AirBNB-1/AirBNB/"
+
+price = pd.read_csv(path + 'airbnb_price.csv')
+review = pd.read_csv(path + 'airbnb_last_review.csv')
+
+    # Read Excel file for airbnb_room_type
+room = pd.read_excel(path + 'airbnb_room_type.xlsx')
+
+print("----Room----")
+print(room)
+print("----Price----")
+print(price)
+print("----Review----")
+print(review)
+```
+
+## Q1a - R
+```{r}
+# 1. Import data
+path <- "C:/Users/james/Downloads/AirBNB-1/AirBNB/"
+price <- read.csv(paste0(path, "airbnb_price.csv"))
+review <- read.csv(paste0(path, "airbnb_last_review.csv"))
+room <- read_excel(paste0(path, "airbnb_room_type.xlsx"))
+
+print("----Room----")
+print(summary(room))
+print("----Price----")
+print(summary(price))
+print("----Review----")
+print(summary(review))
+``` 
+
+## Q2a - Python
+```{python}
+#2
+listings = pd.merge(room, price, on='listing_id', how='left').merge(review, on='listing_id', how='left')
+print(listings.shape)
+```
+
+## Q2a - R
+```{r}
+# 2. Merge datasets
+listings <- room %>%
+  left_join(price, by = "listing_id") %>%
+  left_join(review, by = "listing_id")
+print("Dimensions after merging:")
+print(dim(listings))
+``` 
+
+## Q3a - Python
+```{python}
+#3
+print("\nnumber duplicates before:")
+print(listings.duplicated().sum())
+listings.drop_duplicates(keep='last')
+print("\nnumber duplicates after:")
+print(listings.duplicated().sum())
+```
+
+## Q3a - R
+```{r}
+# 3. Remove duplicates
+print("Dimensions before removing duplicates:")
+print(dim(listings))
+listings <- listings %>% distinct(listing_id, .keep_all = TRUE)
+print("Dimensions after removing duplicates:")
+print(dim(listings))
+``` 
+
+## Q4a - Python
+```{python}
+#4
+print("Missing values in each column:")
+print(listings.isnull().sum())
+
+    # Clean the 'price' column
+listings['price'] = listings['price'].str.replace('dollars', '').str.strip().astype(float)
+
+    # Handle missing values for each feature
+print("\nHandling missing values:")
+
+    # Simple imputation for numeric columns
+numeric_columns = listings.select_dtypes(include=['float64', 'int64']).columns
+mean_imputer = SimpleImputer(strategy='mean')
+listings[numeric_columns] = mean_imputer.fit_transform(listings[numeric_columns])
+print("Simple mean imputation applied to numeric columns")
+        #Justification: Mean imputation is a straightforward method for handling missing values in numeric data.
+
+    # MICE imputation for selected columns
+mice_columns = ['price', 'review_scores_rating']  # Adjust these columns as needed
+mice_imputer = IterativeImputer(estimator=linear_model.BayesianRidge(),
+                                n_nearest_features=None,
+                                imputation_order='ascending')
+listings[mice_columns] = pd.DataFrame(mice_imputer.fit_transform(listings[mice_columns]),
+                                      columns=mice_columns)
+print("MICE imputation applied to:", mice_columns)
+        #Justification: MICE is effective for imputing missing values while preserving relationships between variables.
+
+    # Handle remaining columns
+remaining_columns = listings.columns[listings.isnull().any()].tolist()
+
+for column in remaining_columns:
+    if listings[column].dtype == 'object':
+        # For categorical columns, use mode imputation
+        mode_value = listings[column].mode()[0]
+        listings[column] = listings[column].fillna(mode_value)
+        print(f"Mode imputation applied to {column}")
+        # Justification: Mode imputation is appropriate for categorical data.
+    else:
+        # For remaining numeric columns, use KNN imputation
+        knn_imputer = KNNImputer(n_neighbors=5, weights='uniform', metric='nan_euclidean')
+        listings[column] = knn_imputer.fit_transform(listings[[column]]).ravel()
+        print(f"KNN imputation applied to {column}")
+        # Justification: KNN imputation is useful for maintaining the structure of the data by using similar instances.
+
+    # Verify that all missing values have been imputed
+print("\nRemaining missing values:")
+print(listings.isnull().sum())
+```
+
+## Q4a - R
+```{r}
+# 4. Handle missing values
+print("Missing values in each column (before):")
+print(colSums(is.na(listings)))
+
+    # Clean the 'price' column
+listings$price <- as.numeric(gsub("dollars", "", listings$price))
+
+    # Simple imputation for numeric columns
+numeric_columns <- sapply(listings, is.numeric)
+listings[numeric_columns] <- lapply(listings[numeric_columns], function(x) ifelse(is.na(x), mean(x, na.rm = TRUE), x))
+print("Simple mean imputation applied to numeric columns")
+
+    # MICE imputation for selected columns
+mice_columns <- c("price", "review_scores_rating")
+temp_data <- listings[mice_columns]
+imputed_data <- mice(temp_data, m = 5, maxit = 50, method = "pmm", seed = 500)
+listings[mice_columns] <- complete(imputed_data, 1)
+print(paste("MICE imputation applied to:", paste(mice_columns, collapse = ", ")))
+
+    # Handle remaining columns
+remaining_columns <- names(listings)[colSums(is.na(listings)) > 0]
+for (column in remaining_columns) {
+  if (is.character(listings[[column]])) {
+    mode_value <- names(sort(table(listings[[column]]), decreasing = TRUE))[1]
+    listings[[column]][is.na(listings[[column]])] <- mode_value
+    print(paste("Mode imputation applied to", column))
+  } else {
+    # For remaining numeric columns, use KNN imputation
+    preProcess_missingdata_model <- preProcess(as.data.frame(listings[column]), method = "knnImpute")
+    listings[column] <- predict(preProcess_missingdata_model, newdata = as.data.frame(listings[column]))
+    print(paste("KNN imputation applied to", column))
+  }
+}
+
+    # Verify that all missing values have been imputed
+print("Remaining missing values:")
+print(colSums(is.na(listings)))
+``` 
+
+## Q5a - Python
+```{python}
+#5
+listings['last_review'] = pd.to_datetime(listings['last_review'], format='mixed', dayfirst=False)
+print("Converted 'last_review' to datetime. Sample values:")
+print(listings['last_review'].head())
+
+    # Justification:
+    #1. Using format='mixed' allows pandas to infer the format for each date individually.
+    #2. Setting dayfirst=False assumes that month comes before day in ambiguous cases (e.g., 01-02-2023 is January 2, not February 1)
+```
+
+## Q5a - R
+```{r}
+# 5. Convert 'last_review' to date
+    # parse date library
+library(parsedate)
+parsedate::parse_date(c(
+    '16-Jan-17',
+    '16 January 2017',
+    '01/16/2017',
+    '01/16/17'
+))
+
+listings$last_review <- parsedate::parse_date(listings$last_review)
+print("Converted 'last_review' to date. Sample values:")
+print(head(listings$last_review))
+``` 
+
+## Q6a - Python
+```{python}
+#6
+    # Use pd.Timestamp for current date (couldn't get dt.date.today() to work with the subtraction)
+listings['days_since_review'] = (pd.Timestamp.today() - listings['last_review']).dt.days
+print("\nDays since review")
+print(listings['days_since_review'])
+```
+
+## Q6a - R
+```{r}
+# 6. Calculate days since review
+current_date <- Sys.Date()
+listings$days_since_review <- as.integer(difftime(current_date, listings$last_review, units = "days"))
+
+print("Days since review (first few rows):")
+print(head(listings$days_since_review))
+``` 
+
+## Q7a - Python
+```{python}
+#7
+listings['description'] = listings['description'].str.lower().str.replace('[^A-Za-z0-9]', '')
+print("\nRegular expression edit for description")
+print(listings['description'])
+```
+
+## Q7a - R
+```{r}
+# 7. Clean description
+listings$description <- tolower(gsub("[^[:alnum:]]", " ", listings$description))
+print("Regular expression edit for description (first few rows):")
+print(head(listings$description))
+``` 
+
+## Q8a - Python
+```{python}
+#8
+print("Before dummy coding:", listings.shape)
+listings = pd.get_dummies(listings, columns=['room_type'], drop_first=True)
+print("After dummy coding:", listings.shape)
+```
+
+## Q8a - R
+```{r}
+# 8. Dummy coding
+print(paste("Number of columns before dummy coding:", ncol(listings)))
+listings <- dummy_cols(listings, select_columns = "room_type", remove_first_dummy = TRUE)
+print(paste("Number of columns after dummy coding:", ncol(listings)))
+
+    # Convert dummy columns to logical type (were already a 0 or 1 but were numerical)
+dummy_cols <- names(listings)[grepl("^room_type_", names(listings))]
+listings[dummy_cols] <- lapply(listings[dummy_cols], as.logical)
+
+    # Print the new column names to verify
+print("New columns after dummy coding:")
+print(names(listings)[grepl("^room_type_", names(listings))])
+``` 
+
+## Q9a - Python
+```{python}
+#9
+listings['price'] = listings['price'].astype(int)   #will round down to nearest int
+listings['days_since_review'] = listings['days_since_review'].astype(int)
+print("\nprice:")
+print(listings['price'])
+print("\ndays_since_review:")
+print(listings['days_since_review'].dtype)
+```
+
+## Q9a - R
+```{r}
+# 9. Convert to integer
+listings$price <- as.integer(listings$price)
+listings$days_since_review <- as.integer(listings$days_since_review)
+print("price (first few rows):")
+print(head(listings$price))
+print("days_since_review data type:")
+print(class(listings$days_since_review))
+``` 
+
+## Q10a - Python
+```{python}
+#10
+
+columns_to_scale = ['price', 'review_scores_rating']  # Add or remove columns as needed
+    # Standardization
+scaler = StandardScaler()
+listings[columns_to_scale] = scaler.fit_transform(listings[columns_to_scale])
+
+print('---Standardized Features---')
+print(listings[columns_to_scale].head())
+    #Justification:
+        #StandardScaler is used to normalize features by removing the mean and scaling to unit variance (e.g. Z-score normalization). It is less affected by outliers
+```
+
+## Q10a - R
+```{r}
+# 10. Standardization
+columns_to_scale <- c("price", "review_scores_rating")
+listings[columns_to_scale] <- scale(listings[columns_to_scale])
+print("---Standardized Features (first few rows)---")
+print(head(listings[columns_to_scale]))
+``` 
+
+## Q11a - Python
+```{python}
+#11
+    # Reorder columns
+listings = listings[['description', 'nbhood_full', 'host_name'] + # categorical
+                    [col for col in listings if listings[col].dtype == bool] +  # boolean
+                    ['last_review'] +  # date/time
+                    [col for col in listings if (listings[col].dtype == int or listings[col].dtype == float)] + #numerical
+                    ['review_scores_rating']]  # target variable
+
+    # Print dimensions
+print("\nFinal dataset dimensions:", listings.shape)
+
+    # Print all column names
+print("\nAll columns in the final dataset:")
+for column in listings.columns:
+    print(column)
+    
+    # Export to CSV
+listings.to_csv('airbnb_cleaned.csv', index=False)
+
+```
+
+## Q11a - R
+```{r}
+# 11. Reorder columns
+categorical_cols <- c("description", "nbhood_full", "host_name")
+boolean_cols <- names(listings)[sapply(listings, is.logical)]
+date_cols <- "last_review"
+numeric_cols <- names(listings)[sapply(listings, is.numeric)]
+numeric_cols <- setdiff(numeric_cols, "review_scores_rating")
+
+    # Reorder the dataframe with categorical, boolean, date, numeric, and target column at the end
+listings <- listings[c(categorical_cols, boolean_cols, date_cols, numeric_cols, "review_scores_rating")]
+
+
+print("Final dataset dimensions:")
+print(dim(listings))
+
+print("All columns in the final dataset:")
+print(names(listings))
+
+#Export to CSV
+write.csv(listings, "airbnb_cleaned.csv", row.names = FALSE)
+print("Data exported to 'airbnb_cleaned.csv'")
+``` 
+# Data Cleansing & Preparation 
+
+## Q2
+I merged each of the datasets by using left joins on the listing_id. Using this primary key allows for all of the data to be merged even if some of the values are null. Any null values that we have has been sorted out later in the lab.
+
+## Q3
+If there were any duplicates, the last one was kept to keep redundant information to a minimum. However, I did not find any duplicates in the provided data. Bith my code in R and in Python printed that 0 duplicates were found.
+
+## Q4
+Here, Multiple Imputation by Chained Equations (MICE) was used on price and review_scores_rating since it is an effective way to preserve relationships between variables. If the column was categorical, mode imputation was used. Any remaining numerical fields had K-Nearest Neighbors (KNN) applied. KNN imputation allows data to maintain the same structure that the data was in. I had to learn the fillna function so that I could fill in categorical data (Python Data Analysis Library 2024).
+
+## Q5
+In Python, the format “mixed” had to be used so that pandas could infer the date format. In R, the parsedate library that was provided in class was used instead. Some research had to be conducted to find out how to parse the data in Python.
+
+## Q6
+In order to calculate the number of days that had elapsed since the last_review to the current date in days, today’s date is subtracted by the last_review date.
+
+## Q7
+Regular expressions were used to clean the data of the description column and to convert everything in the column to lowercase. This allows the data to be more consistent in case the text ever needs to be analysed.
+
+## Q8
+Categorical encoding was performed on the room_type column which converted it to a bool. In R, the dummy coding converted it to 0 and 1 values still, but as a numerical value instead. Thus, it had to be manually converted to a bool (or logical value). In Python it was automatically a boolean value after categorically encoding the data.
+
+## Q9
+Here the price and days_since_review columns were converted to integers. This will round down any decimal values to the nearest integer. The function astype() was used in Python and as.integer() was used in R to accomplish this task.
+
+## Q10
+Using StandardScalar, standardization was applied to the price and review_scores_rating columns. This removes the mean and scales each column making them less affected by outliers.
+
+## Q11
+Finally, the columns were sorted by type (categorical, boolean, date/time, numerical, and then the target variable). After that, the dataset was exported to a CSV file.
+
+## Summary & Reflection
+
+### Review
+I found that R was a lot easier to apply what we learned in class. However, Python felt more intuitive to what I wanted to code. I also had to use way less libraries in Python. For example pandas can be used to read in excel files, yet R uses more specialized packages like readxl. Another example is that pandas also includes merging while in R you have to install tidyverse to use the left_join function.
+
+### Challenges
+There were several issues that I had to trouble shoot in this lab. First, when converting last_review to a yyyy-mm-dd format, I had to research the “mixed” format so that I could parse the information in Python. Secondly, I couldn’t get dt.date.today() to work with the subtraction in Python so I had to research how to use pandas Timestamp to get the current date. Lastly, in the R file, the categorical encoding of room_type was made numerical even though it was 0 and 1 values. Thus, it took a far amount of troubleshooting to understand the problem. It also turns out that grepl (Educative 2024) is in R (learned in CSCN 345) which made it easy to find the room_type data to convert each of them to a bool (e.g. logical)
+
+### Biblical Worldview
+As Christians, we need to steward what we are given (1 Peter 4:10). The Airbnb that we were given contains a lot of personal information about hosts and the properties that they own. We need to responsibly use this data and restrict who is allowed to access the data. This also includes maintaining the information. Some of the data maybe should be shared like review_scores_rating and last_review data since they can help consumers make an educated choice. Finally, as data scientists, we have to be careful and transparent in how we clean the data. By giving our reasoning for how we standardize and normalize the data, we have a sense of accountability and other will be able to reproduce our findings.
+
+
+
+
+{{< pagebreak >}}
+
+# References
+
+###### Educative. (2024). What is the grepl() function in R? https://www.educative.io/answers/what-is-the-grepl-function-in-r
+
+###### Hendrickson Publishers. (2004). The holy Bible: King James Version.
+
+###### Python Data Analysis Library. (2024). Pandas.DataFrame.fillna — pandas 2.2.3 documentation. https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.fillna.html

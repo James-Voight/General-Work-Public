@@ -1,0 +1,302 @@
+---
+title: "Quarto Project 6"
+author: "James Voight"
+date: "12-8-2024"
+date-format: long
+format:
+  #pdf
+  #pptx
+  # docx:
+  #   reference-doc: knowles-custom-reference-doc.docx # make sure it is in the same folder as the .qmd
+      # Run this in your python terminal to create a basic reference-doc that you can modify:
+      # quarto pandoc -o custom-reference-doc.docx --print-default-data-file reference.docx
+  html: # or docx for Word Document
+    toc: true # includes table of contents
+    code-fold: true # option for collapsing code blocks in html
+execute:
+  echo: true # includes output
+  warning: false # turns off warnings
+  error: false # if set to true, then stops running at error
+  output: true
+python:
+  version: "3.12.4"  # Specify your Python version here
+  
+---
+
+# Python Code
+```{python}
+# Import necessary libraries
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_absolute_error, mean_squared_error
+from statsmodels.tsa.stattools import adfuller
+from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
+from statsmodels.tsa.ar_model import AutoReg
+from statsmodels.tsa.statespace.sarimax import SARIMAX
+```
+
+## Q1a - Python
+```{python}
+# Step 1: Load and Clean the Data
+path = "C:/Users/james/Downloads/"
+stock = pd.read_csv(path + "Microsoft_Stock-1.csv", parse_dates=['Date'], index_col='Date')
+print("Data Overview:")
+print(stock.head())
+print("\nMissing Values:\n", stock.isnull().sum())
+
+# Drop any missing values
+stock = stock.dropna()
+```
+
+## Q2a - Python
+```{python}
+# Step 2: Explore the Data
+# Plot Closing Price
+plt.figure(figsize=(12, 6))
+stock['Close'].plot(title="Microsoft Closing Stock Prices", ylabel="Closing Price")
+plt.show()
+
+# Plot Volume
+plt.figure(figsize=(12, 6))
+stock['Volume'].plot(title="Microsoft Trading Volume", ylabel="Volume")
+plt.show()
+
+print("Interpretation: The closing prices show a general upward trend, while the trading volume exhibits fluctuations.")
+```
+
+## Q3a - Python
+```{python}
+# Step 3: Train/Test Split (Last 6 months as test set)
+train = stock[:'2020-09-29']
+test = stock['2020-09-30':'2021-03-31']
+
+print(f"Training data: {train.shape}, Testing data: {test.shape}")
+```
+
+## Q4a - Python
+```{python}
+# Step 4: Linear Regression
+X_train = np.array(range(len(train))).reshape(-1, 1)
+y_train = train['Close'].values
+X_test = np.array(range(len(train), len(stock))).reshape(-1, 1)
+
+# Fit Linear Regression
+lr_model = LinearRegression()
+lr_model.fit(X_train, y_train)
+LR_preds = lr_model.predict(X_test)
+
+# Linear Regression Metrics
+mae_lr = mean_absolute_error(test['Close'], LR_preds[-len(test):])
+rmse_lr = np.sqrt(mean_squared_error(test['Close'], LR_preds[-len(test):]))
+
+print("\nLinear Regression Metrics:")
+print(f"MAE: {mae_lr:.4f}, RMSE: {rmse_lr:.4f}")
+
+# Plot Linear Regression Results
+plt.figure(figsize=(12, 6))
+plt.plot(train.index, train['Close'], label="Training Data")
+plt.plot(test.index, test['Close'], label="Testing Data")
+plt.plot(test.index, LR_preds[-len(test):], label="Linear Regression Predictions")
+plt.legend()
+plt.title("Linear Regression Results")
+plt.xlabel("Date")
+plt.ylabel("Closing Price")
+plt.show()
+```
+
+## Q5a - Python
+```{python}
+# Step 5: Stationarity Check and Differencing
+print("\nADF Test on Original Data:")
+result = adfuller(stock['Close'])
+print(f"ADF Statistic: {result[0]}, p-value: {result[1]}")
+
+# Differencing the Series
+stock['Close_diff'] = stock['Close'].diff()
+print("\nADF Test on Differenced Data:")
+result_diff = adfuller(stock['Close_diff'].dropna())
+print(f"ADF Statistic: {result_diff[0]}, p-value: {result_diff[1]}")
+
+# Plot ACF and PACF
+fig, axes = plt.subplots(1, 2, figsize=(14, 5))
+plot_acf(stock['Close_diff'].dropna(), ax=axes[0], title="ACF of Differenced Data")
+plot_pacf(stock['Close_diff'].dropna(), ax=axes[1], title="PACF of Differenced Data")
+plt.show()
+```
+
+## Q6a - Python
+```{python}
+# Step 6: AutoReg Model
+# Choose lag based on ACF/PACF or experiment with different values
+lag = 1  # Choose an appropriate lag value, or experiment with ACF/PACF
+
+auto_reg_model = AutoReg(train['Close'], lags=lag)
+auto_reg_fitted = auto_reg_model.fit()
+
+# Make predictions
+TSModel1_preds = auto_reg_fitted.predict(start=len(train), end=len(stock)-1, dynamic=False)
+
+# AutoReg Metrics
+mae_ar = mean_absolute_error(test['Close'], TSModel1_preds)
+rmse_ar = np.sqrt(mean_squared_error(test['Close'], TSModel1_preds))
+
+print("\nAutoReg Model Metrics:")
+print(f"MAE: {mae_ar:.4f}, RMSE: {rmse_ar:.4f}")
+
+# Plot AutoReg Results
+plt.figure(figsize=(12, 6))
+plt.plot(train.index, train['Close'], label="Training Data")
+plt.plot(test.index, test['Close'], label="Testing Data")
+plt.plot(test.index, TSModel1_preds, label="AutoReg Predictions")
+plt.legend()
+plt.title("AutoReg Results")
+plt.show()
+```
+
+## Q7a - Python
+```{python}
+# Step 7: SARIMA Model (optional, can be kept if needed)
+sarima_model = SARIMAX(
+    train['Close'],
+    order=(1, 1, 1),
+    seasonal_order=(1, 1, 1, 12)
+)
+sarima_fitted = sarima_model.fit(disp=False)
+TSModel2_preds = sarima_fitted.forecast(steps=len(test))
+
+# SARIMA Metrics
+mae_sarima = mean_absolute_error(test['Close'], TSModel2_preds)
+rmse_sarima = np.sqrt(mean_squared_error(test['Close'], TSModel2_preds))
+
+print("\nSARIMA Model Metrics:")
+print(f"MAE: {mae_sarima:.4f}, RMSE: {rmse_sarima:.4f}")
+
+# Plot SARIMA Results (optional)
+plt.figure(figsize=(12, 6))
+plt.plot(train.index, train['Close'], label="Training Data")
+plt.plot(test.index, test['Close'], label="Testing Data")
+plt.plot(test.index, TSModel2_preds, label="SARIMA Predictions")
+plt.legend()
+plt.title("SARIMA Results")
+plt.show()
+```
+
+## Q8a - Python
+```{python}
+# Step 8: Compare All Models
+plt.figure(figsize=(12, 6))
+plt.plot(train.index, train['Close'], label="Training Data")
+plt.plot(test.index, test['Close'], label="Testing Data")
+plt.plot(test.index, LR_preds[-len(test):], label="Linear Regression")
+plt.plot(test.index, TSModel1_preds, label="AutoReg")
+plt.plot(test.index, TSModel2_preds, label="SARIMA")
+plt.legend()
+plt.title("Model Comparison")
+plt.xlabel("Date")
+plt.ylabel("Closing Price")
+plt.show()
+```
+
+## Q1a - Python
+```{python}
+# Step 9: Summary
+print("\nModel Comparison Summary:")
+print(f"Linear Regression - MAE: {mae_lr:.4f}, RMSE: {rmse_lr:.4f}")
+print(f"AutoReg - MAE: {mae_ar:.4f}, RMSE: {rmse_ar:.4f}")
+print(f"SARIMA - MAE: {mae_sarima:.4f}, RMSE: {rmse_sarima:.4f}")
+print("\nAutoReg provides a simpler alternative and may perform well depending on the time series structure.")
+```
+
+
+# Linear Regression and Time Series
+
+## Q4
+Mean Absolute Error (MAE) and Root Mean Squared Error (RMSE) are being calculated using the functions mean_absolute_error() and mean_squared_error(). The outcome shows how well the model performs.
+
+### Justification of Accuracy Measures:
+MAE is a good measure of the average magnitude of errors in predictions. This also happens without considering their direction (positive or negative).
+
+RMSE is much more sensitive to large errors,. Thus, it’s more useful when large errors are not particularly desirable.
+
+### Discussion of Results:
+Given the simplistic nature of linear regression, it may not perform very well for time series forecasting. This is especially the case for complex data like stock prices, where  seasonality and trends are likely present.
+
+
+## Q5
+a. 
+A line plot of the closing stock price (Close) over time reveals an upward trend in the data, consistent with Microsoft’s growth during this period. However, no obvious seasonality was immediately apparent visually, prompting a deeper statistical investigation.
+
+b.
+To determine whether the data is stationary, we performed the Augmented Dickey-Fuller (ADF) test on the original closing price data. A p-value being greater than 0.5 indicates that the data is not stationary.
+
+c.
+Identification:
+ACF shows correlations between a time series and its lagged values.
+PACF shows correlations of the time series with lagged values, controlling for intermediate lags.
+
+Estimation:
+The parameters of p, d, and q were estimated and chosen based on the ACF and PACF plots as well as some trial and error.
+
+Diagnostic Checking:
+The residuals should have no autocorrelation (random noise) and the ACF of residuals should show no significant lags.
+
+## Q6
+Model Selection:
+An Auto-Regressive (AR) model is chosen because it is a simpler approach for time series data. This is because it that relies on past values (lags) of the time series when forecasting future values.
+
+It is reasonable to use an AR model when the time series exhibits trend and autocorrelation. This model does not need differencing or seasonal adjustments. The Partial Autocorrelation Function (PACF) plot supports the use of AR, which shows a significant cut-off at lag=1.
+
+Parameter Selection:
+The value of p (the lag order) is determined using the PACF plot:
+
+The PACF reveals that correlations at certain lags are significant while others drop to zero. the value of p was then deduced to be one from the plot.
+
+Model Accuracy:
+
+Mean Absolute Error (MAE) and Root Mean Squared Error (RMSE) are calculated to evaluate the AR model.
+AutoReg - MAE: 7.3621, RMSE: 9.5715
+
+Justification:
+MAE is used to evaluate the average size of the error, and RMSE penalizes larger errors. Both types of measures are reasonable for financial time series data.
+
+Discussion of Results:
+The AR model performs better than simple linear regression since it uses historical lagged data to make predictions. However, its performance is dependent on the linear relationships being assumed to be between current and lagged values. Although the model performs pretty well, it does not account for small variations in stock prices and does not have the ability to model seasonality or handle external shocks.
+
+## Q7
+Model Selection:
+A SARIMA model is chosen instead of ARIMA, as seasonal components are also used. SARIMA is used if there is seasonality in the data.
+
+Model Accuracy:
+The MAE and RMSE are calculated for SARIMA, following the same rationale as with ARIMA.
+
+Justification: The SARIMA model is expected to perform better if there are seasonal patterns in the data.
+
+Results:
+The SARIMA model performed very well since it can use both short-term lag effects and long-term seasonal patterns.
+
+
+## Q8
+Comparison:
+The SARIMA model performed the best, followed by the AR model and then Linear Regression. Linear Regression had a very high MAE and RMSE. Comparatively, the AR model was significantly better. The SARIMA model was slightly better than the AR model.
+
+Linear Regression - MAE: 35.3780, RMSE: 36.3017
+AutoReg - MAE: 7.3621, RMSE: 9.5715
+SARIMA - MAE: 6.0990, RMSE: 7.9862
+
+## Q9
+a.
+The SARIMA model was the best out of the three since it utilizes both long-term seasonal patterns and lag effects in the short term.
+
+b.
+The SARIMA model is good at predicting forecasts in the short-term. However, it is susceptible to big factors (internal or external) such as a financial crisis or the market volatility. Overall, linear regression is the best for a very long-term forecast.
+
+c.
+The approach should be reviewed or updated quarterly or if there is a significant market change.
+
+{{< pagebreak >}}
+
+# References
+
+###### Hendrickson Publishers. (2004). The holy Bible: King James Version.

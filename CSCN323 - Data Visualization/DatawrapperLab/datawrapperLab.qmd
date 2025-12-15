@@ -1,0 +1,189 @@
+---
+title: "Datawrapper Report"
+format: html
+---
+
+# Jobs in Data Science
+
+## Maximum Salaries by Job Category & Experience Level 1.1
+
+Below is the embedded chart for maximum salaries by job category and experience level.
+
+<iframe title="Maximum Salaries by Job Category &amp; Experience Level" aria-label="Table" id="datawrapper-chart-cgtjR" src="https://datawrapper.dwcdn.net/cgtjR/1/" scrolling="no" frameborder="0" style="width: 0; min-width: 100% !important; border: none;" height="613" data-external="1">
+
+</iframe>
+
+```{=html}
+<script type="text/javascript">
+!function() {
+    "use strict";
+    window.addEventListener("message", (function(a) {
+        if (void 0 !== a.data["datawrapper-height"]) {
+            var e = document.querySelectorAll("iframe");
+            for (var t in a.data["datawrapper-height"])
+                for (var r, i = 0; r = e[i]; i++)
+                    if (r.contentWindow === a.source) {
+                        var d = a.data["datawrapper-height"][t] + "px";
+                        r.style.height = d;
+                    }
+        }
+    }));
+}();
+</script>
+```
+
+## Number of Jobs Available Across Work Settings & Experience Levels 1.2
+
+Below is the embedded chart for the number of jobs available across work settings and experience levels.
+
+<iframe title="Number of Jobs Available Across Work Settings &amp;amp; Experience Levels" aria-label="Grouped Columns" id="datawrapper-chart-brh2W" src="https://datawrapper.dwcdn.net/brh2W/2/" scrolling="no" frameborder="0" style="width: 0; min-width: 100% !important; border: none;" height="475" data-external="1">
+
+</iframe>
+
+```{=html}
+<script type="text/javascript">!function(){"use strict";window.addEventListener("message",(function(a){if(void 0!==a.data["datawrapper-height"]){var e=document.querySelectorAll("iframe");for(var t in a.data["datawrapper-height"])for(var r,i=0;r=e[i];i++)if(r.contentWindow===a.source){var d=a.data["datawrapper-height"][t]+"px";r.style.height=d}}}))}();
+</script>
+```
+
+## Salary Variation by Company Location 1.3
+
+Below is the embedded chart for average salary based on company location.
+
+<iframe title="Salary (USD) Variation by Company Location" aria-label="Map" id="datawrapper-chart-Ibsvs" src="https://datawrapper.dwcdn.net/Ibsvs/3/" scrolling="no" frameborder="0" style="width: 0; min-width: 100% !important; border: none;" height="369" data-external="1">
+
+</iframe>
+
+```{=html}
+<script type="text/javascript">!function(){"use strict";window.addEventListener("message",(function(a){if(void 0!==a.data["datawrapper-height"]){var e=document.querySelectorAll("iframe");for(var t in a.data["datawrapper-height"])for(var r,i=0;r=e[i];i++)if(r.contentWindow===a.source){var d=a.data["datawrapper-height"][t]+"px";r.style.height=d}}}))}();
+</script>
+```
+
+## Percentage Ratio of Work Setting by Company Size 1.4
+
+Below is the embedded chart for the work setting ratio of employees at different sized companies.
+
+<iframe title="Percentage Ratio of Work Setting by Company Size" aria-label="Grouped Columns" id="datawrapper-chart-oViL8" src="https://datawrapper.dwcdn.net/oViL8/1/" scrolling="no" frameborder="0" style="width: 0; min-width: 100% !important; border: none;" height="449" data-external="1">
+
+</iframe>
+
+```{=html}
+<script type="text/javascript">!function(){"use strict";window.addEventListener("message",(function(a){if(void 0!==a.data["datawrapper-height"]){var e=document.querySelectorAll("iframe");for(var t in a.data["datawrapper-height"])for(var r,i=0;r=e[i];i++)if(r.contentWindow===a.source){var d=a.data["datawrapper-height"][t]+"px";r.style.height=d}}}))}();
+</script>
+```
+
+## Job Availability Over Time 1.5
+
+Below is the embedded chart for the number of jobs in each category over four years.
+
+<iframe title="Job Availability Over Time" aria-label="Interactive line chart" id="datawrapper-chart-xNGid" src="https://datawrapper.dwcdn.net/xNGid/1/" scrolling="no" frameborder="0" style="width: 0; min-width: 100% !important; border: none;" height="527" data-external="1">
+
+</iframe>
+
+```{=html}
+<script type="text/javascript">!function(){"use strict";window.addEventListener("message",(function(a){if(void 0!==a.data["datawrapper-height"]){var e=document.querySelectorAll("iframe");for(var t in a.data["datawrapper-height"])for(var r,i=0;r=e[i];i++)if(r.contentWindow===a.source){var d=a.data["datawrapper-height"][t]+"px";r.style.height=d}}}))}();
+</script>
+```
+
+# Glassdoor
+
+## Education & Experience Required for Data Engineering Jobs 2.1
+
+Below is the embedded chart that compares how much education & experience an applicant needs.
+
+<iframe title="Education &amp;amp; Experience Required for Data Engineering Jobs" aria-label="Grouped Columns" id="datawrapper-chart-0cp2y" src="https://datawrapper.dwcdn.net/0cp2y/1/" scrolling="no" frameborder="0" style="width: 0; min-width: 100% !important; border: none;" height="449" data-external="1">
+
+</iframe>
+
+```{=html}
+<script type="text/javascript">!function(){"use strict";window.addEventListener("message",(function(a){if(void 0!==a.data["datawrapper-height"]){var e=document.querySelectorAll("iframe");for(var t in a.data["datawrapper-height"])for(var r,i=0;r=e[i];i++)if(r.contentWindow===a.source){var d=a.data["datawrapper-height"][t]+"px";r.style.height=d}}}))}();
+</script>
+```
+
+## Top Recruiting Companies and Industries 2.2
+
+Below is the embedded charts that show the top companies and industries based on their rating.
+
+<iframe title=" Top Recruiting Companies" aria-label="Bar Chart" id="datawrapper-chart-UxOAk" src="https://datawrapper.dwcdn.net/UxOAk/2/" scrolling="no" frameborder="0" style="width: 0; min-width: 100% !important; border: none;" height="713" data-external="1">
+
+</iframe>
+
+```{=html}
+<script type="text/javascript">!function(){"use strict";window.addEventListener("message",(function(a){if(void 0!==a.data["datawrapper-height"]){var e=document.querySelectorAll("iframe");for(var t in a.data["datawrapper-height"])for(var r,i=0;r=e[i];i++)if(r.contentWindow===a.source){var d=a.data["datawrapper-height"][t]+"px";r.style.height=d}}}))}();
+</script>
+```
+
+<iframe title="Top 10 Recruiting Industries" aria-label="Bar Chart" id="datawrapper-chart-GTu2U" src="https://datawrapper.dwcdn.net/GTu2U/3/" scrolling="no" frameborder="0" style="width: 0; min-width: 100% !important; border: none;" height="329" data-external="1">
+
+</iframe>
+
+```{=html}
+<script type="text/javascript">!function(){"use strict";window.addEventListener("message",(function(a){if(void 0!==a.data["datawrapper-height"]){var e=document.querySelectorAll("iframe");for(var t in a.data["datawrapper-height"])for(var r,i=0;r=e[i];i++)if(r.contentWindow===a.source){var d=a.data["datawrapper-height"][t]+"px";r.style.height=d}}}))}();
+</script>
+```
+
+## Average Salary Estimate by Company Sector 2.3
+
+Below is the embedded chart for the average estimated salary based on the company sector.
+
+<iframe title="Average Salary Estimate by Company Sector" aria-label="Bar Chart" id="datawrapper-chart-BuiLB" src="https://datawrapper.dwcdn.net/BuiLB/1/" scrolling="no" frameborder="0" style="width: 0; min-width: 100% !important; border: none;" height="641" data-external="1">
+
+</iframe>
+
+```{=html}
+<script type="text/javascript">!function(){"use strict";window.addEventListener("message",(function(a){if(void 0!==a.data["datawrapper-height"]){var e=document.querySelectorAll("iframe");for(var t in a.data["datawrapper-height"])for(var r,i=0;r=e[i];i++)if(r.contentWindow===a.source){var d=a.data["datawrapper-height"][t]+"px";r.style.height=d}}}))}();
+</script>
+```
+
+## Data Engineering Job Locations 2.4
+
+Below is the embedded choropleth chart for number of jobs in each location (state).
+
+<iframe title="Data Engineering Job Locations" aria-label="Map" id="datawrapper-chart-K84hf" src="https://datawrapper.dwcdn.net/K84hf/1/" scrolling="no" frameborder="0" style="width: 0; min-width: 100% !important; border: none;" height="485" data-external="1">
+
+</iframe>
+
+```{=html}
+<script type="text/javascript">!function(){"use strict";window.addEventListener("message",(function(a){if(void 0!==a.data["datawrapper-height"]){var e=document.querySelectorAll("iframe");for(var t in a.data["datawrapper-height"])for(var r,i=0;r=e[i];i++)if(r.contentWindow===a.source){var d=a.data["datawrapper-height"][t]+"px";r.style.height=d}}}))}();
+</script>
+```
+
+## Average Estimated Salary Based on Location 2.5
+
+Below is the embedded choropleth chart for the estimated salary of data engineering job posts based on the state.
+
+<iframe title="Average Estimated Salary Based on Location" aria-label="Map" id="datawrapper-chart-Oz1mc" src="https://datawrapper.dwcdn.net/Oz1mc/1/" scrolling="no" frameborder="0" style="width: 0; min-width: 100% !important; border: none;" height="485" data-external="1">
+
+</iframe>
+
+```{=html}
+<script type="text/javascript">!function(){"use strict";window.addEventListener("message",(function(a){if(void 0!==a.data["datawrapper-height"]){var e=document.querySelectorAll("iframe");for(var t in a.data["datawrapper-height"])for(var r,i=0;r=e[i];i++)if(r.contentWindow===a.source){var d=a.data["datawrapper-height"][t]+"px";r.style.height=d}}}))}();
+</script>
+```
+
+# Narrative
+
+              The color coding of the charts and graphs are simple. If money is measured in the graphic, the color is green. This is because in America our currency is green giving it a positive denotation. If the audience was from China, we would make it red for the same reasons. The other graphs are either blue or purple shades. This prevents any colorblind issues and gives a sharp contrast making values easily seen.
+
+              Moving on to Figure 1.1, a heat mapped table was made for the viewer to visibly differentiate between high and low values. We can see that having senior level job experience does not guarantee higher pay. For example, in both machine learning, AI engineering, and analytics engineering, the max salaries of mid-level employees are higher than senior level employees. We can also easily see that some job categories are way less lucrative than others. A senior Data Analyst & Admin has a max salary of \$60,000 which is not even half a senior applied scientist. A table works great here since the data is very cluttered.
+
+              Figure 2.2 shows that every experience level has more in person jobs than remote and hybrid combined. There are also very few hybrid jobs. The highest in demand experience level based on the data set are senior level jobs followed by mid-level.
+
+              A choropleth map of the whole world was used to visualize the variation of average salary by company location in Figure 2.3. The country Qatar had a very high average salary and was skewing the graph, so the map is based off of the quartiles of the data. We can see that North America, Australia, and the Middle East have very high average salaries while Southeast Asia and parts of the Mediterranean have low salaries.
+
+              The next graph, Figure 2.4, gives the ratio of the job work setting based on the size of the company. As the company size increases, less percentage remote jobs are offered. Medium and large companies hire a greater proportion of in-person positions.
+
+              Figure 1.5 highlights the trend of job availability over time. Job opportunities only grew to 197 in 2021, but by 2023 there were 8,485 unfilled positions. However, in 2024 that went down to 3,811 jobs. The years 2022 and 2023 were right about when remote work started to catch on and then many companies could have been over hiring, thus the drop in new posts.
+
+              As seen in Figure 2.1, many job postings on Glassdoor did not provide a prerequisite for education and experience (blank). Most bachelor’s degree postings want at least 10 years of experience while jobs requiring a master’s degree have more openings for less experienced applicants.
+
+              There are two bar charts for Figure 2.2 in order to show the top recruiting companies and industries based on ratings. There were many 5-star companies, so I added any company with a 4.8 or higher rating. No industries had a perfect average rating, so I just included the top 10. The number one recruiting industry is HR consulting with a rating of 4.54 stars.
+
+             Figure 2.3 gives us the average estimated salary based on company sectors. The bar chart is in descending order letting us easily see that Hotels & Travel Accommodation are first with \$147,500 and Government & Public Administration at \$80,957.25 is ranked the lowest.
+
+             Next, a choropleth map was created in Figure 2.4 to show the number of jobs that there are at each location. To make this easier, the location was split by state. The states with the highest number of jobs were California and Texas both at 30 jobs. Many states only had one job. What isn’t shown is that there are 67 remote job postings too.
+
+             Figure 2.5 another choropleth map of the United States, but it instead shows the average estimated salary based on the state. Surprisingly, Alabama has the highest average salary of \$145,500.
+
+             I believe that a choropleth map lets the viewer have a better perspective of distance to judge the data. For example, California and Texas have a lot of jobs. However, they are also the biggest states. A bar chart is great when you have categorical data that is related to quantitative (count, average, etc.).
+
+             Looking back over the project there were many challenges and limitations. For example, a limitation is that Datawrapper doesn’t allow for x and y labels. This makes the graphs and charts turn out not exactly how I want them to make sense I always try to be descriptive. A challenge in this project was that there is no choropleth map of the United States with cities. There are maps of states with cities but not the whole country. To fix this I combined all the data into just states. Another challenge was embedding the code in quarto. For some reason I don’t get an error, but each time that I update my quarto file, I have to close the file and reopen it in order to render the html file. I still don’t know why this is happening, but it took me a while to figure out this workaround.

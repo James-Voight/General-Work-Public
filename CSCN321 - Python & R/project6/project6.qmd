@@ -1,0 +1,411 @@
+---
+title: "Quarto Project 6"
+author: "James Voight"
+date: "12-8-2024"
+date-format: long
+format:
+  #pdf
+  #pptx
+  # docx:
+  #   reference-doc: knowles-custom-reference-doc.docx # make sure it is in the same folder as the .qmd
+      # Run this in your python terminal to create a basic reference-doc that you can modify:
+      # quarto pandoc -o custom-reference-doc.docx --print-default-data-file reference.docx
+  html: # or docx for Word Document
+    toc: true # includes table of contents
+    code-fold: true # option for collapsing code blocks in html
+execute:
+  echo: true # includes output
+  warning: false # turns off warnings
+  error: false # if set to true, then stops running at error
+  output: true
+python:
+  version: "3.12.4"  # Specify your Python version here
+  
+---
+
+# R Code
+```{r}
+#imports
+# install.packages("readxl")
+# install.packages("caret")
+# install.packages("arules", dependencies = TRUE)
+# install.packages("openxlsx")
+
+```
+
+## Q1a - R
+```{r}
+#1
+# Read the dataset
+library(readxl)
+path <- "C:/Users/james/Downloads/"
+spotify <- read_excel(paste0(path, "spotify_dataset-1.xlsx"))
+
+# Check data types and dimensions
+print(str(spotify))
+print(dim(spotify))
+
+# # Convert data types if necessary
+spotify$user_id <- as.factor(spotify$user_id)
+spotify$artist <- as.character(spotify$artist)
+spotify$track <- as.character(spotify$track)
+spotify$playlist <- as.character(spotify$playlist)
+``` 
+
+## Q2a - R
+```{r}
+#2
+# Check for missing values in each column
+print(colSums(is.na(spotify)))
+
+# Mode imputation
+library(caret)
+    # Identify columns with missing values
+columns_with_na <- names(spotify)[colSums(is.na(spotify)) > 0]
+
+# Handle each column with missing values
+for (column in columns_with_na) {
+  if (is.character(spotify[[column]]) || is.factor(spotify[[column]])) {
+    # For character or factor columns, use mode imputation
+    mode_value <- names(sort(table(spotify[[column]]), decreasing = TRUE))[1]
+    spotify[[column]][is.na(spotify[[column]])] <- mode_value
+    print(paste("Mode imputation applied to", column))
+  }
+}
+
+# Check the dimensions after
+print("After cleaning")
+print(colSums(is.na(spotify)))
+
+print("Total rows after each removal:")
+print(nrow(spotify))
+
+# Remove tracks that are not actual songs
+spotify <- spotify[!grepl("intro|outro", spotify$track, ignore.case = TRUE), ]
+
+print(nrow(spotify))
+
+# Remove records with special characters in track or artist names
+spotify <- spotify[!grepl("[^[:alnum:][:space:]]", spotify$track), ]
+spotify <- spotify[!grepl("[^[:alnum:][:space:]]", spotify$artist), ]
+print(nrow(spotify))
+
+# Convert data into transactions
+library(arules)
+
+# Ensure the tracks and artists are grouped by user_id as transactions
+transactions_track <- as(split(spotify$track, spotify$user_id), "transactions")
+transactions_artist <- as(split(spotify$artist, spotify$user_id), "transactions")
+
+# Create a combined column and generate transactions for artist-track pairs
+spotify$artist_track <- paste(spotify$artist, spotify$track, sep = " - ")
+transactions_artist_track <- as(split(spotify$artist_track, spotify$user_id), "transactions")
+
+# Remove duplicates in transactions
+# Convert transactions to a list, remove duplicates, and convert back
+transactions_artist_list <- as(transactions_artist, "list")
+transactions_artist_list <- lapply(transactions_artist_list, unique)
+transactions_artist <- as(transactions_artist_list, "transactions")
+
+# Similarly for other transaction objects
+transactions_track_list <- as(transactions_track, "list")
+transactions_track_list <- lapply(transactions_track_list, unique)
+transactions_track <- as(transactions_track_list, "transactions")
+
+transactions_artist_track_list <- as(transactions_artist_track, "list")
+transactions_artist_track_list <- lapply(transactions_artist_track_list, unique)
+transactions_artist_track <- as(transactions_artist_track_list, "transactions")
+
+
+non_empty_transactions <- transactions_artist[size(transactions_artist) > 1]
+transactions_artist <- non_empty_transactions
+``` 
+
+## Q3a - R
+```{r}
+#3
+library(ggplot2)
+
+# Top 10 tracks
+track_freq <- sort(table(spotify$track), decreasing = TRUE)[1:10]
+print(ggplot(data.frame(track = names(track_freq), freq = as.numeric(track_freq)), aes(x = reorder(track, freq), y = freq)) +
+  geom_bar(stat = "identity") +
+  coord_flip() +
+  labs(title = "Top 10 Tracks", x = "Track", y = "Frequency"))
+
+# Top 10 artists
+artist_freq <- sort(table(spotify$artist), decreasing = TRUE)[1:10]
+print(ggplot(data.frame(artist = names(artist_freq), freq = as.numeric(artist_freq)), aes(x = reorder(artist, freq), y = freq)) +
+  geom_bar(stat = "identity") +
+  coord_flip() +
+  labs(title = "Top 10 Artists", x = "Artist", y = "Frequency"))
+
+# Top 10 tracks with artist
+track_artist_freq <- sort(table(paste(spotify$track, "-", spotify$artist)), decreasing = TRUE)[1:10]
+print(ggplot(data.frame(track_artist = names(track_artist_freq), freq = as.numeric(track_artist_freq)), aes(x = reorder(track_artist, freq), y = freq)) +
+  geom_bar(stat = "identity") +
+  coord_flip() +
+  labs(title = "Top 10 Tracks with Artist", x = "Track - Artist", y = "Frequency"))
+
+# Top 10 users/listeners
+user_freq <- sort(table(spotify$user_id), decreasing = TRUE)[1:10]
+print(ggplot(data.frame(user = names(user_freq), freq = as.numeric(user_freq)), aes(x = reorder(user, freq), y = freq)) +
+  geom_bar(stat = "identity") +
+  coord_flip() +
+  labs(title = "Top 10 Users", x = "User ID", y = "Frequency"))
+``` 
+
+## Q4a - R
+```{r}
+#4
+library(arulesViz)
+library(openxlsx)
+
+#artist
+# generate rules
+ARules_artist <- apriori(transactions_artist, parameter = list(supp = 0.08, conf = .4, target = 'rules', minlen=3))
+
+# visualize rules
+print(plot(ARules_artist, jitter=0))
+
+# take the top 10 rules
+top10 <- head(ARules_artist, n=10, by='lift')
+
+print(plot(top10, method='graph', engine='htmlwidget'))
+print(plot(top10, method = 'graph', control = list(type = "items")))
+
+ARules_artist_df <- as(ARules_artist, "data.frame")
+file_path <- file.path(path, "ARules_artist.xlsx")
+
+# for writing a data.frame or list of data.frames to an xlsx file
+write.xlsx(ARules_artist_df, file_path)
+
+#track
+# generate rules
+ARules_track <- apriori(transactions_track, parameter = list(supp = 0.04, conf = .5, target = 'rules', minlen=2))
+
+# visualize rules
+print(plot(ARules_track, jitter=0))
+
+# take the top 10 rules
+top10 <- head(ARules_track, n=10, by='lift')
+
+print(plot(top10, method='graph', engine='htmlwidget'))
+print(plot(top10, method = 'graph', control = list(type = "items")))
+
+ARules_track_df <- as(ARules_track, "data.frame")
+file_path <- file.path(path, "ARules_track.xlsx")
+
+# for writing a data.frame or list of data.frames to an xlsx file
+write.xlsx(ARules_track_df, file_path)
+
+# artist and track
+# generate rules
+ARules_ArtistTrack <- apriori(transactions_artist_track, parameter = list(supp = 0.03, conf = .4, target = 'rules', minlen=3))
+
+# visualize rules
+print(plot(ARules_ArtistTrack, jitter=0))
+
+
+# take the top 10 rules
+top10 <- head(ARules_ArtistTrack, n=10, by='lift')
+
+print(plot(top10, method='graph', engine='htmlwidget'))
+print(plot(top10, method = 'graph', control = list(type = "items")))
+
+ARules_ArtistTrack_df <- as(ARules_ArtistTrack, "data.frame")
+file_path <- file.path(path, "ARules_ArtistTrack.xlsx")
+
+# for writing a data.frame or list of data.frames to an xlsx file
+write.xlsx(ARules_ArtistTrack_df, file_path)
+``` 
+
+## Q5a - R
+```{r}
+# 5
+#fp growth
+
+#artist
+MRules_artist <- arules::fim4r(transactions_artist, method = 'fpgrowth',
+                          target = 'rules',
+                          zmin = 3,
+                          # zmax = 3,
+                          support = 0.08,
+                          confidence = 0.40
+                          )
+
+print(paste("Number of rules:", length(MRules_artist)))
+
+print(plot(MRules_artist, shading = "order",
+           engine = "html",
+           main = "Plot FP Rules",
+           jitter = 0))
+print(plot(MRules_artist, method = "scatterplot", shading = "lift", jitter = 0))
+
+# take the top 10 rules
+top10 <- head(MRules_artist, n=10, by='lift')
+
+print(plot(top10, method='graph', engine='htmlwidget'))
+print(plot(top10, method = 'graph', control = list(type = "items")))
+
+MRules_artist_df <- as(MRules_artist, "data.frame")
+file_path <- file.path(path, "MRules_artist.xlsx")
+
+# for writing a data.frame or list of data.frames to an xlsx file
+write.xlsx(MRules_artist_df, file_path)
+
+# Tracks
+MRules_track <- arules::fim4r(transactions_track, method = 'fpgrowth',
+                          target = 'rules',
+                          zmin = 2,
+                          # zmax = 3,
+                          support = 0.04,
+                          confidence = 0.50
+                          )
+
+
+print(paste("Number of rules:", length(MRules_track)))
+
+print(plot(MRules_track, shading = "order",
+           engine = "html",
+           main = "Plot FP Rules",
+           jitter = 0))
+print(plot(MRules_track, method = "scatterplot", shading = "lift", jitter = 0))
+
+# take the top 10 rules
+top10 <- head(MRules_track, n=10, by='lift')
+
+print(plot(top10, method='graph', engine='htmlwidget'))
+print(plot(top10, method = 'graph', control = list(type = "items")))
+
+MRules_track_df <- as(MRules_track, "data.frame")
+file_path <- file.path(path, "MRules_track.xlsx")
+
+# for writing a data.frame or list of data.frames to an xlsx file
+write.xlsx(MRules_track_df, file_path)
+
+
+# tracks with artists
+MRules_ArtistTrack <- arules::fim4r(transactions_artist_track, method = 'fpgrowth',
+                          target = 'rules',
+                          zmin = 3,
+                          # zmax = 3,
+                          support = 0.03,
+                          confidence = 0.40
+                          )
+
+
+print(paste("Number of rules:", length(MRules_ArtistTrack)))
+
+print(plot(MRules_ArtistTrack, shading = "order",
+           engine = "html",
+           main = "Plot FP Rules",
+           jitter = 0))
+print(plot(MRules_ArtistTrack, method = "scatterplot", shading = "lift", jitter = 0))
+
+# take the top 10 rules
+top10 <- head(MRules_ArtistTrack, n=10, by='lift')
+
+print(plot(top10, method='graph', engine='htmlwidget'))
+print(plot(top10, method = 'graph', control = list(type = "items")))
+
+MRules_ArtistTrack_df <- as(MRules_ArtistTrack, "data.frame")
+file_path <- file.path(path, "MRules_ArtistTrack.xlsx")
+
+# for writing a data.frame or list of data.frames to an xlsx file
+write.xlsx(MRules_ArtistTrack_df, file_path)
+``` 
+
+# Association Analysis
+
+## Q4
+I used the apriori algorithm in this section to apply the transaction that were grouped by artists, tracks, and artist-track combinations. In order to generate between 5 to 20 rules, the parameters of support, confidence, minimum length were adjusted. The rules gave insight to how frequently co-occurring items are. The scatter plots and network graphs (top 10) provide for a more clear visual interpretation of the different relationships. The results were then exported to excel files.
+
+### Artists Support and Confidence Justification:
+
+#### Support:
+In order to identify frequent artist pairings, I set the support threshold to a pretty low value. I was looking around 0.1% to 1% of users. This helps to ensure that the rule includes artists with a broad listener base, but still allows for niche connections. Artists that are frequently together, but don't have that high of support may not be as significant.
+
+#### Confidence:
+I wanted the confidence value to be set at around 0.4 - 0.6 to ensure that there is a strong association between two artists. Having a 0.5 confidence value means that if one artist is played, 50% of the time the other artist will also be played.
+
+### Tracks Support and Confidence Justification:
+
+#### Support:
+In user playlists, tracks have a much higher frequency than artists. Thus, I wanted a higher support threshold closer to 0.5% to 5% of users. This helps make sure that tracks are popular, but not overly common.
+
+#### Confidence:
+Similar to the artists, it is reasonable to assume that a strong pairing will have about a 0.6 to 0.7 confidence value. This means that if a user listens to one track, 60-70% of the time they will also listen to the other track.
+
+### Artists and Tracks Support and Confidence Justification:
+
+#### Support:
+  Since this rule combines both artists and tracks, the support should be somewhat higher, likely around 1% - 3% to capture significant combinations of artists and their tracks.
+
+Since we are combining both artists and tracks into this rule, the support should be a little higher than the smallest (artists) aroun 1% to 3%. This captures artist and track combinations significantly.
+
+#### Confidence:
+This time we wanted the confidence to show when users listen to an artist, if they listen to other tracks of that same artist too. Thus, the confidence was set from 0.5 to 0.7.
+
+## Q5
+The FP-Growth algorithm, a faster alternative to Apriori, was employed to identify frequent patterns. Similar to the Apriori approach, transactions were grouped by artists, tracks, and artist-track pairs. Parameters were tuned to generate actionable rules, which were visualized using network graphs and shading plots. This method demonstrated efficiency in processing large datasets, offering an alternative perspective on frequent patterns. The rules generated were compared with Apriori results to assess differences in coverage, support, and confidence.
+
+Here, the FP-Growth algorithm was used to find frequent patterns. This approach was very similar to the Apriori method. First, we used the same transaction groupings of artists, tracks, and artist-track pairs. The parameters were kept the same so that a better comparison could be done between the 2 algorithm methods. They were also all still within 5 to 20 rules so it worked. The rules were also shown this time through a scatterplot and top 10 network graphs.
+
+Note: 4 & 5 used an extra network graph since the html widget wan't showing up in the processed html file.
+## Q6
+Using Apriori graphs
+
+### A. 2 Artist Recommendations (Antecedents and Consequents):
+Artist Recommendation 1: Katy Perry
+
+Antecedent(s): Lady Gaga, Bruno Mars, Coldplay, Rihanna
+Consequent: Lady Gaga, Bruno Mars, Coldplay, Rihanna
+Explanation: Connected to all 9 rules. For example, the interpretation of rule 6 is that Katy Perry fans would also enjoy listening to Rihanna as both are pop influences.
+
+Artist Recommendation 2: Rihanna
+
+Antecedent(s): Lady Gaga, Bruno Mars, Coldplay, Katy Perry
+Consequent: Lady Gaga, Bruno Mars, Coldplay, Katy Perry
+Explanation: Also connected to all 9 rules and every artist multiple times.
+### B. 2 Track Recommendations (Antecedents and Consequents):
+Track Recommendation 1: Yellow
+
+Antecedent(s): "Clocks" and "The Scientist"
+Consequent: "Clocks" and "The Scientist"
+Explanation: They have a relationship between rules 3, 4, 5, and 6 meaning that it is likely to be played.
+
+Track Recommendation 2: "Come As You Are" by Nirvana
+
+Antecedent(s): "Lithium"
+Consequent: "Lithium" and "Smells Like Teen Spirit"
+Explanation: There is a strong relationship that is shown by rules 1, 2, and 7. These songs also have pretty similar tones.
+
+### C. 2 Artist with Track Recommendations (Antecedents and Consequents):
+Artist + Track Recommendation 1: Nirvana - "Come As You Are"
+
+Antecedent(s): Nirvana - "Lithium" and "Smells Like Teen Spirit"
+Consequent: Nirvana - "Lithium" and "Smells Like Teen Spirit"
+Explanation: Rule 2 demonstrates that fans of "Lithium" and "Smells Like Teen Spirit" are likely to enjoy "Come As You Are," further solidifying their connection with Nirvana as an artist too.
+
+Artist + Track Recommendation 2: Imagine Dragons - "Radioactive"
+
+Antecedent(s): "Demons" and "Top of the World"
+Consequent: "Demons" and "Top of the World"
+Explanation: Imagine Dragons is the only other artist in the rules and is connected to rules 3, 4,  and 6. Radioactive also has 2 antecedents and 2 consequents.
+
+### D. 5 Rules
+I would choose rules 1 and 3 from artist-track, rules 2 and 4 from artists, and rule 3 from tracks. From artist-tracks we first get relationships for both Nirvana and Imagine Dragons. Then we have relationships in artists between Katy Perry, Rihanna, Lada Gaga, and Bruno Mars (Coldplay is the least connected). Finally, choosing rule 3 from tracks does help bring together some Coldplay songs.
+
+## Q7
+Apriori gave better interpretable rules with a more straightforward and accurate proccess. However, there wasn't that substantial of a change. Everything that had a relationship now still does with FP Growth. The only thing that really changed was the order of the rules.
+
+I did notice that FP Growth was very fast in comparison to Apriori. Sometimes Apriori would take 3-5 minutes to calculate even with this relatively small database.
+
+Since there was little change in the end result and such a big time gap, I much prefer FG Growth over Apriori as of right now.
+
+{{< pagebreak >}}
+
+# References
+
+###### Hendrickson Publishers. (2004). The holy Bible: King James Version.
