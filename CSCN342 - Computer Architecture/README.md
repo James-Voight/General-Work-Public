@@ -1,3 +1,6 @@
+# Important!
+This repository only shows the README documentation to these projects. Since these are included in school work, a private repo is used to hold all of the work. If you would like to access any work, please email me at james.voight@me.com with your account information and I will be happy to grant you access.
+
 # CSCN342 - Assembly Language Programming
 
 This repository contains a comprehensive collection of assembly language programming projects covering multiple processor architectures including 6502, x86-64, and ARM. The projects progress from basic assembly concepts to advanced low-level programming techniques including self-modifying code, custom calling conventions, and hardware I/O operations.
